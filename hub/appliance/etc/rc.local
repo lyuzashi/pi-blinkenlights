@@ -1,0 +1,42 @@
+#!/bin/bash
+
+# Remove this file if you want to re-run the setup
+#
+if [ -f /boot/pi-install.done ] ; then
+  exit 0
+fi
+
+if [ -f /boot/cmdline.original.txt ] ; then
+  mv -f /boot/cmdline.original.txt /boot/cmdline.txt
+fi
+
+# Set hostname
+echo "Blinkenlights-Bedroom" > /etc/hostname
+
+export DEBIAN_FRONTEND=noninteractive
+
+# Find best apt mirror
+sudo apt-get install netselect-apt -y
+sudo netselect-apt
+sudo apt update
+
+apt install git libudev-dev -y
+
+git clone git://github.com/scanlime/fadecandy
+
+cd fadecandy/server
+make submodules
+make
+
+sudo mv fcserver /usr/local/bin
+
+groupadd fadecandy
+useradd -m blinkenlights
+usermod -a -G fadecandy blinkenlights
+usermod -s /bin/bash blinkenlights
+
+FADECANDY_SERIAL=$(lsusb -d 1d50:607a -v | sed -En 's/\s+iSerial\s+.\s+([A-Z0-9]+)/\1/p')
+sed -i "s/SERIAL/$FADECANDY_SERIAL/" /usr/local/bin/fcserver.json
+
+chmod +x /etc/init.d/fadecandy
+update-rc.d fadecandy defaults
