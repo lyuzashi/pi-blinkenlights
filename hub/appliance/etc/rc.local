@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Setup any VLANs on boot
+ip link add link eth0 name eth0.6 type vlan id 6
+
 # Remove this file if you want to re-run the setup
 #
 if [ -f /boot/pi-install.done ] ; then
@@ -15,13 +18,13 @@ echo "Blinkenlights-Bedroom" > /etc/hostname
 
 export DEBIAN_FRONTEND=noninteractive
 
-# Find best apt mirror
-sudo apt-get install netselect-apt -y
-sudo netselect-apt
+# Update sources and packages
 sudo apt update
 
-apt install git libudev-dev -y
+# Install build tools and required software
+apt install git libudev-dev pigpio -y
 
+# Download and build FC Server
 git clone git://github.com/scanlime/fadecandy
 
 cd fadecandy/server
@@ -38,5 +41,39 @@ usermod -s /bin/bash blinkenlights
 FADECANDY_SERIAL=$(lsusb -d 1d50:607a -v | sed -En 's/\s+iSerial\s+.\s+([A-Z0-9]+)/\1/p')
 sed -i "s/SERIAL/$FADECANDY_SERIAL/" /usr/local/bin/fcserver.json
 
-chmod +x /etc/init.d/fadecandy
-update-rc.d fadecandy defaults
+# Ensure VLAN module is installed
+echo '8021q' | tee -a /etc/modules > /dev/null
+modprobe 8021q
+
+# Download latest version of USBIP
+wget http://security.debian.org/debian-security/pool/updates/main/l/linux/usbip_2.0+4.19.67-2+deb10u1_armhf.deb
+
+dpkg -i ./usbip_2.0+4.19.67-2+deb10u1_armhf.deb
+apt-get install -f
+
+modprobe usbip_core
+modprobe usbip_host
+modprobe vhci-hcd
+
+
+# Add cron task to frequently run wget -N on webdav share 
+# TODO
+
+# Enable services
+systemctl enable pigpiod.service
+systemctl start pigpiod.service
+systemctl enable fadecandy.service
+systemctl start fadecandy.service
+systemctl enable fadecandy-watcher.service
+systemctl start fadecandy-watcher.service
+systemctl enable usbipd.service
+systemctl start usbipd.service
+
+# Flag script as done
+touch /boot/pi-install.done
+
+# Modules for node won't be available until reboot. Can they be installed though?
+sudo rpi-update
+reboot
+
+exit 0

@@ -1,0 +1,5 @@
+[Path]
+PathModified=/usr/local/bin
+
+[Install]
+WantedBy=multi-user.target
