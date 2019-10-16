@@ -1,0 +1,88 @@
+#!/bin/bash
+
+# Setup any VLANs on boot
+ip link add link eth0 name eth0.6 type vlan id 6
+
+# Remove this file if you want to re-run the setup
+#
+if [ -f /boot/pi-install.done ] ; then
+  exit 0
+fi
+
+export DEBIAN_FRONTEND=noninteractive
+
+# Update sources and packages
+apt update
+
+# Install build tools and required software
+apt install git libudev-dev pigpio usbip davfs2 -y
+
+# Download and build FC Server
+git clone git://github.com/scanlime/fadecandy
+
+cd fadecandy/server
+make submodules
+make
+
+mv fcserver /usr/local/bin
+
+groupadd fadecandy
+useradd -m blinkenlights
+usermod -a -G fadecandy blinkenlights
+usermod -s /bin/bash blinkenlights
+
+FADECANDY_SERIAL=$(lsusb -d 1d50:607a -v | sed -En 's/\s+iSerial\s+.\s+([A-Z0-9]+)/\1/p')
+sed -i "s/SERIAL/$FADECANDY_SERIAL/" /usr/local/bin/config/fcserver.json
+chown -R :fadecandy /usr/local/bin/config
+chmod -R g+w /usr/local/bin/config
+
+cd /
+rm -r fadecandy
+
+# Ensure VLAN module is installed
+echo '8021q' | tee -a /etc/modules > /dev/null
+modprobe 8021q
+
+# Ensure USBIP modules are installed
+echo 'usbip_core' | tee -a /etc/modules > /dev/null
+echo 'usbip_host' | tee -a /etc/modules > /dev/null
+echo 'vhci-hcd' | tee -a /etc/modules > /dev/null
+
+modprobe usbip_core
+modprobe usbip_host
+modprobe vhci-hcd
+
+# Setup sync config with Memory
+
+mkdir /mnt/memory
+echo 'https://memory.grid.robotjamie.com "" ""' | tee /etc/davfs2/secrets > /dev/null
+echo "https://memory.grid.robotjamie.com/ /mnt/memory    davfs   defaults,uid=pi,gid=pi,_netdev,auto  0       0" | tee -a /etc/fstab > /dev/null
+mount -a
+
+
+# Disable services (auto generated with unwanted config)
+systemctl disable pigpiod
+systemctl stop pigpiod
+rm /lib/systemd/system/pigpiod.service
+systemctl daemon-reload
+
+# Enable services
+systemctl enable pigpio.service
+systemctl start pigpio.service
+systemctl enable fadecandy.service
+systemctl start fadecandy.service
+systemctl enable fadecandy-watcher.path
+systemctl start fadecandy-watcher.path
+systemctl enable fadecandy-config.timer
+systemctl start fadecandy-config.timer
+systemctl enable usbipd.service
+systemctl start usbipd.service
+
+# Flag script as done
+touch /boot/pi-install.done
+
+# Modules for node won't be available until reboot. Can they be installed though?
+rpi-update
+reboot
+
+exit 0

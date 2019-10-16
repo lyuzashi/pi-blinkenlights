@@ -1,6 +1,6 @@
 {
   "listen": [null, 7890],
-  "verbose": true,
+  "verbose": false,
   "color": {
     "gamma": 2.5,
     "whitepoint": [0.75, 0.75, 0.75]

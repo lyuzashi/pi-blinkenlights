@@ -1,0 +1,6 @@
+[Unit]
+Description=FadeCandy restart config
+
+[Service]
+Type=oneshot
+ExecStart=/bin/systemctl restart fadecandy.service

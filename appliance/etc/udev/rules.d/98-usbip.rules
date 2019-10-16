@@ -1,0 +1,13 @@
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="0424", ATTRS{idProduct}=="ec00", GOTO="add_end"
+ACTION=="add", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="607a", GOTO="add_end"
+
+ACTION=="add", ENV{DEVTYPE}=="usb_device", SUBSYSTEMS=="usb", RUN+="/usr/sbin/usbip bind -b %k"
+
+LABEL="add_end"
+
+ACTION=="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="0424", ATTRS{idProduct}=="ec00", GOTO="remove_end"
+ACTION=="remove", SUBSYSTEMS=="usb", ATTRS{idVendor}=="1d50", ATTRS{idProduct}=="607a", GOTO="remove_end"
+
+ACTION=="remove", ENV{DEVTYPE}=="usb_device", SUBSYSTEMS=="usb", RUN+="/usr/sbin/usbip unbind -b %k"
+
+LABEL="remove_end"

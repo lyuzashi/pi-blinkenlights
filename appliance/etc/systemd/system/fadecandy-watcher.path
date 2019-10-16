@@ -1,0 +1,8 @@
+[Unit] 
+Wants=fadecandy-watcher.service
+
+[Path]
+PathChanged=/usr/local/bin/config/fcserver.json
+
+[Install]
+WantedBy=multi-user.target

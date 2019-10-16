@@ -1,2 +1,0 @@
-ACTION=="add", ENV{DEVTYPE}=="usb_device", SUBSYSTEMS=="usb", ENV{ID_VENDOR_ID}!="0424", ENV{ID_MODEL_ID}!="ec00", ENV{ID_VENDOR_ID}!="1d50", ENV{ID_MODEL_ID}!="607a", RUN+="usr/sbin/usbip bind -b %k"
-ACTION=="remove", ENV{DEVTYPE}=="usb_device", SUBSYSTEMS=="usb", ENV{ID_VENDOR_ID}!="0424", ENV{ID_MODEL_ID}!="ec00", ENV{ID_VENDOR_ID}!="1d50", ENV{ID_MODEL_ID}!="607a", RUN+="usr/sbin/usbip unbind -b %k"

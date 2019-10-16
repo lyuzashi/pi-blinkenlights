@@ -1,0 +1,10 @@
+[Unit]
+Description=Update FadeCandy config from universe memory
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+Unit=fadecandy-config.service
+
+[Install]
+WantedBy=multi-user.target

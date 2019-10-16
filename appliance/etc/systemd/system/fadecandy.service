@@ -1,11 +1,11 @@
 [Unit]
-Description=Fadecandy Server Daemon
+Description=FadeCandy Server Daemon
 After=network.target
 
 [Service]
 Type=simple
 WorkingDirectory=/usr/local/bin
-ExecStart=/usr/local/bin/fcserver /usr/local/bin/fcserver.json
+ExecStart=/usr/local/bin/fcserver /usr/local/bin/config/fcserver.json
 User=blinkenlights
 Group=fadecandy
 

@@ -1,0 +1,6 @@
+[Unit]
+Description=Update FadeCandy config from universe memory
+
+[Service]
+ExecStart=/scripts/sync-config.sh
+User=blinkenlights

@@ -1,0 +1,11 @@
+[Unit]
+Description=pigpio daemon
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/pigpiod -g
+Group=gpio
+
+[Install]
+WantedBy=multi-user.target
