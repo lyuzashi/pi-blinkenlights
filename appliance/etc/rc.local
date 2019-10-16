@@ -9,11 +9,32 @@ if [ -f /boot/pi-install.done ] ; then
   exit 0
 fi
 
+# https://askubuntu.com/a/375031
+function apt-wait() {
+  i=0
+  tput sc
+  while fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
+      case $(($i % 4)) in
+          0 ) j="-" ;;
+          1 ) j="\\" ;;
+          2 ) j="|" ;;
+          3 ) j="/" ;;
+      esac
+      tput rc
+      echo -en "\r[$j] Waiting for other software managers to finish..." 
+      sleep 0.5
+      ((i=i+1))
+  done 
+}
+
+
 export DEBIAN_FRONTEND=noninteractive
 
+apt-wait
 # Update sources and packages
 apt update
 
+apt-wait
 # Install build tools and required software
 apt install git libudev-dev pigpio usbip davfs2 -y
 
@@ -82,6 +103,7 @@ systemctl start usbipd.service
 touch /boot/pi-install.done
 
 # Modules for node won't be available until reboot. Can they be installed though?
+apt-wait
 rpi-update
 reboot
 

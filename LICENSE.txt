@@ -1,2 +1,4 @@
 Modified software under the pi-init2 package and cmdline.txt file were taken from project pi-init2, Copyright 2015 Bytemark Ltd. 
 This source code is licensed under the MIT license. See pi-init2-LICENSE.txt for additional details.
+
+Portions of code copied from Radu Rădeanu on AskUbuntu https://askubuntu.com/a/375031
